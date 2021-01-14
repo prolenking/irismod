@@ -37,8 +37,8 @@ Each message type comes with a default handler that can be used by default but w
 
 // OverrideNFTModule overrides the NFT module for custom handlers
 type OverrideNFTModule struct {
-  nft.AppModule
-  k nft.Keeper
+    nft.AppModule
+    k nft.Keeper
 }
 
 // NewHandler overwrites the legacy NewHandler in order to allow custom logic for handling the messages
@@ -48,10 +48,10 @@ func (am OverrideNFTModule) NewHandler() sdk.Handler {
 
 // NewOverrideNFTModule generates a new NFT Module
 func NewOverrideNFTModule(appModule nft.AppModule, keeper nft.Keeper) OverrideNFTModule {
-  return OverrideNFTModule{
-    AppModule: appModule,
-    k:         keeper,
-  }
+    return OverrideNFTModule{
+        AppModule: appModule,
+        k:         keeper,
+    }
 }
 ```
 
@@ -60,36 +60,34 @@ You can see here that `OverrideNFTModule` is the same as `nft.AppModule` except 
 ```go
 // CustomNFTHandler routes the messages to the handlers
 func CustomNFTHandler(k keeper.Keeper) sdk.Handler {
-  return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
-    switch msg := msg.(type) {
-      case types.MsgTransferNFT:
-        return nft.HandleMsgTransferNFT(ctx, msg, k)
-      case types.MsgEditNFT:
-        return nft.HandleMsgEditdata(ctx, msg, k)
-     case types.MsgMintNFT:
-        return HandleMsgMintNFTCustom(ctx, msg, k) // <-- This one is custom, the others fall back onto the default
-      case types.MsgBurnNFT:
-        return nft.HandleMsgBurnNFT(ctx, msg, k)
-      default:
-        errMsg := fmt.Sprintf("unrecognized nft message type: %T", msg)
-        return sdk.ErrUnknownRequest(errMsg).Result()
+    return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+        switch msg := msg.(type) {
+        case types.MsgTransferNFT:
+            return nft.HandleMsgTransferNFT(ctx, msg, k)
+        case types.MsgEditNFT:
+            return nft.HandleMsgEditdata(ctx, msg, k)
+        case types.MsgMintNFT:
+            return HandleMsgMintNFTCustom(ctx, msg, k) // <-- This one is custom, the others fall back onto the default
+        case types.MsgBurnNFT:
+            return nft.HandleMsgBurnNFT(ctx, msg, k)
+        default:
+            errMsg := fmt.Sprintf("unrecognized nft message type: %T", msg)
+            return sdk.ErrUnknownRequest(errMsg).Result()
+        }
     }
-  }
 }
 
 // HandleMsgMintNFTCustom is a custom handler that handles MsgMintNFT
-func HandleMsgMintNFTCustom(ctx sdk.Context, msg types.MsgMintNFT, k keeper.Keeper,
-) sdk.Result {
+func HandleMsgMintNFTCustom(ctx sdk.Context, msg types.MsgMintNFT, k keeper.Keeper) sdk.Result {
+    isTwilight := checkTwilight(ctx)
 
-  isTwilight := checkTwilight(ctx)
+    if isTwilight {
+        return nft.HandleMsgMintNFT(ctx, msg, k)
+    }
 
-  if isTwilight {
-    return nft.HandleMsgMintNFT(ctx, msg, k)
-  }
-
-  errMsg := fmt.Sprintf("Can't mint astral bodies outside of twilight!")
-  return sdk.ErrUnknownRequest(errMsg).Result()
-  }
+    errMsg := fmt.Sprintf("Can't mint astral bodies outside of twilight!")
+    return sdk.ErrUnknownRequest(errMsg).Result()
+}
 ```
 
 The default handlers are imported here with the NFT module and used for `MsgTransferNFT`, `MsgEditNFT` and `MsgBurnNFT`. The `MsgMintNFT` however is handled with a custom function called `HandleMsgMintNFTCustom`. This custom function also utilizes the imported NFT module handler `HandleMsgMintNFT`, but only after certain conditions are checked. In this case it checks a function called `checkTwilight` which returns a boolean. Only if `isTwilight` is true will the Message succeed.

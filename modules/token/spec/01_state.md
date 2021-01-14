@@ -12,14 +12,14 @@ Definition of data structure of FungibleToken
 
 ```go
 type Token struct {
-  Symbol        string
-  Name          string
-  Scale         uint8
-  MinUnit       string
-  InitialSupply uint64
-  MaxSupply     uint64
-  Mintable      bool
-  Owner         sdk.AccAddress
+    Symbol        string
+    Name          string
+    Scale         uint8
+    MinUnit       string
+    InitialSupply uint64
+    MaxSupply     uint64
+    Mintable      bool
+    Owner         sdk.AccAddress
 }
 ```
 
@@ -32,8 +32,8 @@ and defines overall functioning of the token module.
 
 ```go
 type Params struct {
-  TokenTaxRate      sdk.Dec
-  IssueTokenBaseFee sdk.Coin
-  MintTokenFeeRatio sdk.Dec
+    TokenTaxRate      sdk.Dec
+    IssueTokenBaseFee sdk.Coin
+    MintTokenFeeRatio sdk.Dec
 }
 ```
